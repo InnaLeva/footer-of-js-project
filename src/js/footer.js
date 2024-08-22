@@ -2,6 +2,8 @@
  const form = document.querySelector('.footer-form');
 const modal = document.getElementById('modal');
 const closeModalBtn = document.querySelector('.footer-close-button');
+const emailMessage = document.getElementById("email-message");
+
 const STORAGE_KEY = 'feedback-form-state';
 
 let formData = {
@@ -15,9 +17,7 @@ populateForm();
 // Add event listeners
 form.addEventListener('input', handleFormInput);
 form.addEventListener('submit', handleFormSubmit);
-closeModalBtn.addEventListener('click', closeModal);
-modal.addEventListener('click', outsideClickClose);
-window.addEventListener('keydown', escapeKeyClose);
+
 
 // Function to handle input into the form
 function handleFormInput(event) {
@@ -45,7 +45,7 @@ function handleFormSubmit(event) {
 
 // Function to validate email input
 function validateEmail(inputElement) {
-    const emailMessage = document.getElementById("email-message");
+    
     const emailPattern = /^\w+(\.\w+)?@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
 
     if (emailPattern.test(inputElement.value.trim())) {
@@ -90,28 +90,26 @@ function submitFormData(data) {
 
 // Function to open modal
 function openModal() {
-  form.requestFullscreen();
+  form.reset();
+  emailMessage.textContent = ' ';
     modal.classList.add('is-open');
 }
 
-// Function to close modal
-function closeModal() {
+closeModalBtn.addEventListener('click', function() {
+        modal.classList.remove('is-open');
+});
+    
+ modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.classList.remove('is-open');
+        }
+    });
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === "Escape") {
     modal.classList.remove('is-open');
-}
-
-// Function to close modal on outside click
-function outsideClickClose(event) {
-    if (event.target === modal) {
-        closeModal();
-    }
-}
-
-// Function to close modal on Escape key press
-function escapeKeyClose(event) {
-    if (event.key === 'Escape') {
-        closeModal();
-    }
-}
+  }
+    })
 
 // Function to populate the form with data from localStorage
 function populateForm() {
