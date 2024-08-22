@@ -1,173 +1,145 @@
 
  const form = document.querySelector('.footer-form');
-    const modal = document.getElementById('modal');
+const modal = document.getElementById('modal');
 const closeModalBtn = document.querySelector('.footer-close-button');
-  
-const STORAGE_KEY = "feedback-form-state";
-const API_URL = "https://ramiiaholomoza.github.io/light-summer-project/";
+const STORAGE_KEY = 'feedback-form-state';
 
 let formData = {
-        email: "",
-        comments: ""
-    };
+    email: '',
+    comments: ''
+};
 
+// Initialize form by populating it with data from localStorage
+populateForm();
+
+// Add event listeners
+form.addEventListener('input', handleFormInput);
+form.addEventListener('submit', handleFormSubmit);
+closeModalBtn.addEventListener('click', closeModal);
+modal.addEventListener('click', outsideClickClose);
+window.addEventListener('keydown', escapeKeyClose);
+
+// Function to handle input into the form
+function handleFormInput(event) {
+    const { value, name } = event.target;
+    formData[name] = value.trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+
+    if (name === 'email') {
+        validateEmail(event.target);
+    }
+}
+
+// Function to handle form submission
+function handleFormSubmit(event) {
+    event.preventDefault();
     
-  populateForm(); // Заповнити поля форми даними з localStorage, якщо доступно
-  
-// Відстеження подій на формі
-  form.addEventListener("input", handleFormInput);
-  
-  // Відстеження події на відправлення форми
-    form.addEventListener('submit', function(event) {
-      event.preventDefault(); // Перешкоджаємо стандартному відправленню форми
-      
-       // Перевірка валідності форми
-      if (form.checkValidity()) {
-        
-        submitFormData(formData);// Надіслати дані форми на сервер
-        } else {
-            alert('Fill in all fields');
+    if (form.checkValidity()) {
+        openModal();
+        // Optionally trigger the submit action to the API
+        // submitFormData(formData);
+    } else {
+        alert('Fill in all fields');
+    }
+}
+
+// Function to validate email input
+function validateEmail(inputElement) {
+    const emailMessage = document.getElementById("email-message");
+    const emailPattern = /^\w+(\.\w+)?@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
+
+    if (emailPattern.test(inputElement.value.trim())) {
+        emailMessage.textContent = "Success!";
+        emailMessage.classList.add("success");
+        emailMessage.classList.remove("error");
+    } else {
+        emailMessage.textContent = "Invalid email, try again";
+        emailMessage.classList.add("error");
+        emailMessage.classList.remove("success");
+    }
+}
+
+// Function to submit data to the server (commented out for now)
+function submitFormData(data) {
+    // Uncomment and implement fetch request here as needed
+    /*
+    fetch(API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
+        return response.json();
+    })
+    .then(() => {
+        openModal();
+        localStorage.removeItem(STORAGE_KEY);
+        form.reset();
+        formData = { email: '', comments: '' }; // Reset data
+    })
+    .catch(error => {
+        alert('There was a problem with your submission. Please try again.');
     });
-        
+    */
+}
 
-        // Функція для обробки введення даних у форму
-        function handleFormInput(event) {
-          const value = event.target.value.trim();
-          const key = event.target.name.trim();
+// Function to open modal
+function openModal() {
+  form.requestFullscreen();
+    modal.classList.add('is-open');
+}
 
-          formData[key] = value;
-    
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-    
-          // Перевірка введеної електронної пошти
-        if (key === "email") {
-            validateEmail(event.target);
-        }
-          console.log(key, value);
-        }
+// Function to close modal
+function closeModal() {
+    modal.classList.remove('is-open');
+}
 
-  // Підтвердьте електронну адресу та надішліть коментар
-    function validateEmail(inputElement) {
-        const emailMessage = document.getElementById("email-message");
-        const emailPattern = /^\w+(\.\w+)?@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
+// Function to close modal on outside click
+function outsideClickClose(event) {
+    if (event.target === modal) {
+        closeModal();
+    }
+}
 
-        if (emailPattern.test(inputElement.value.trim())) {
-            emailMessage.textContent = "Success!";
-            emailMessage.classList.add("success");
-            emailMessage.classList.remove("error");
-        } else {
-            emailMessage.textContent = "Invalid email, try again";
-            emailMessage.classList.add("error");
-            emailMessage.classList.remove("success");
-        }
-  }
-  
-  // Надішліть дані форми на сервер
-    //function submitFormData(data) {
-        // fetch(API_URL, {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify(data),
-        // })
-        // .then(response => {
-        //     if (!response.ok) {
-        //         throw new Error('Network response was not ok');
-        //     }
-        //     return response.json();
-        // })
-        // .then(result => {
-        //     // Відобразити success
-        //     modal.classList.add('is-open');
-        //     // Очистити localStorage і скинути форму
-        //     localStorage.removeItem(STORAGE_KEY);
-        //     form.reset();
-        //     formData = {};
-        // })
-        // .catch(error => {
-        //     // Показати користувачеві повідомлення про помилку
-        //     alert('There was a problem with your submission. Please try again.');
-        // });
-   // }
+// Function to close modal on Escape key press
+function escapeKeyClose(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+}
 
-// Заповнити поля форми збереженими даними з localStorage
-        function populateForm() {
-          let savedFeedbackData = JSON.parse(localStorage.getItem(STORAGE_KEY));
-  
-          if (!savedFeedbackData) {
-            return;
-          }
+// Function to populate the form with data from localStorage
+function populateForm() {
+    const savedFeedbackData = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
-          for (const key in savedFeedbackData) {
+    if (savedFeedbackData) {
+        for (const key in savedFeedbackData) {
             if (savedFeedbackData.hasOwnProperty(key)) {
                 form.elements[key].value = savedFeedbackData[key];
                 formData[key] = savedFeedbackData[key];
             }
         }
-        }
-        
-        populateForm(); // Заповнити поля форми даними з localStorage, якщо доступно
-
-          formData[key] = value;
-    
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
-    
-          console.log(key, value);
-          // Перевірка введеної електронної пошти
-        if (key === "email") {
-            validateEmail(event.target);
-        }
-        
-// Підтвердьте електронну адресу та надішліть коментар
-function validateEmail(inputElement) {
-  const emailMessage = document.getElementById("email-message");
-  const emailPattern = /^\w+(\.\w+)?@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
-
-  if (emailPattern.test(inputElement.value.trim())) {
-    emailMessage.textContent = "Success!";
-    emailMessage.classList.add("success");
-    emailMessage.classList.remove("error");
-  } else {
-    emailMessage.textContent = "Invalid email, try again";
-    emailMessage.classList.add("error");
-    emailMessage.classList.remove("success");
-    emailMessage.style.color = '#e74a3b';
-  }
-
+    }
 }
-  
-
-      form.addEventListener('submit', function(event) {
-      event.preventDefault(); // Перешкоджаємо стандартному відправленню форми
-       // Перевірка валідності форми
-        if (form.checkValidity()) {
-         modal.classList.add('is-open');
-        } else {
-          hoverOpenBtn.classList.remove('open-btn-hover');
-        }
-         form.reset();
-      })
-
-// Закриття модального вікна
-        closeModalBtn.addEventListener('click', function() {
-        modal.classList.remove('is-open');
-    });
-
-    // Додатково закриваємо модальне вікно при кліку на фон
-    modal.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.classList.remove('is-open');
-        }
-    });
-  
-     //закрити модальне вікно при натисканні на Esc
-window.addEventListener('keydown', (e) => {
-  if (e.key === "Escape") {
-    modal.classList.remove('is-open');
-  }
-    })
 
 
+/*### Explanation:
+1. **Event Listeners**: All event listeners are registered at the beginning for clarity.
+2. **Form Handling**: Functions such as `handleFormInput` and `handleFormSubmit` handle the logic for input and submission.
+3. **Validation**: The `validateEmail` function checks the email validity and updates the message accordingly.
+4. **Modal Management**: Functions (like `openModal` and `closeModal`) manage the modal display state.
+5. **LocalStorage Handling**: The `populateForm` function retrieves saved feedback data from `localStorage` to pre-fill the form.
+6. **Modular Structure**: All functions are defined separately for better maintainability and readability, allowing for easy imports into your `main.js`.
 
+### Note:
+- Ensure to implement the actual submission logic inside `submitFormData` when needed. For now, it’s commented out.
+- Make sure to include a link to this script in your HTML file, like so:
+```html
+<script type="module" src="./path/to/your/script.js"></script>
+```
+- The `#email-message` span should exist in your HTML for displaying email validation feedback. */
